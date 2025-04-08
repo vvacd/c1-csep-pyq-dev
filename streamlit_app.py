@@ -13,12 +13,26 @@ client = bigquery.Client(credentials=credentials)
 # Perform query.
 # Uses st.cache_data to only rerun when the query changes or after 10 min.
 @st.cache_data(ttl=600)
+
+"""
 def run_query(query):
     query_job = client.query(query)
     rows_raw = query_job.result()
     # Convert to list of dicts. Required for st.cache_data to hash the return value.
     rows = [dict(row) for row in rows_raw]
     return rows
+"""
+
+def run_query(query):
+    client = bigquery.Client()
+    try:
+        query_job = client.query(query)
+        rows_raw = query_job.result()  # This will raise an exception if the job failed
+        rows = [dict(row) for row in rows_raw]
+        return rows
+    except Exception as e:
+        st.error(f"Query failed: {e}")
+        raise
 
 # rows = run_query("SELECT word FROM `bigquery-public-data.samples.shakespeare` LIMIT 100")
 rows = run_query("SELECT ctgSubjectsS FROM `bq2409.c1_cse.d0_csep_pyqs` LIMIT 1000") 
